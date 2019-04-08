@@ -8,10 +8,35 @@ import (
 	"strings"
 )
 
+var _ Store = &SQLStore{}
+var _ ReWeighter = &SQLStore{}
+var _ Counter = &SQLStore{}
+
 // SQLStore implements Store interface using the Go standard library
 // sql package.
 type SQLStore struct {
 	DB *sql.DB
+}
+
+// Count returns the number of triples that match the given query.
+func (ss *SQLStore) Count(ctx context.Context, query Query) (int, error) {
+	sq := `SELECT count(*) FROM triples`
+
+	where, args, err := getWhereClause(query)
+	if err != nil {
+		return 0, err
+	}
+	if where != "" {
+		sq += fmt.Sprintf("WHERE %s", where)
+	}
+
+	var count int64
+	row := ss.DB.QueryRowContext(ctx, sq, args...)
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
 }
 
 // Insert persists the given triple into the triples table.
@@ -170,7 +195,8 @@ create table if not exists triples (
 	source text not null,
 	predicate text not null,
 	target text not null,
-	weight decimal not null default 0
+	weight decimal not null default 0,
+	created_at timestamp not null default CURRENT_TIMESTAMP
 );
 create unique index if not exists triple_idx on triples (source, predicate, target);
 `
