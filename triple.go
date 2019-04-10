@@ -3,7 +3,7 @@ package fabric
 import (
 	"errors"
 	"fmt"
-	"regexp"
+	"strings"
 )
 
 // Triple represents a subject-predicate-object.
@@ -16,15 +16,15 @@ type Triple struct {
 
 // Validate ensures the entity names are valid.
 func (tri Triple) Validate() error {
-	if !namePattern.MatchString(tri.Source) {
+	if strings.ContainsAny(tri.Source, forbiddenChars) {
 		return errors.New("invalid source name")
 	}
 
-	if !namePattern.MatchString(tri.Target) {
+	if strings.ContainsAny(tri.Target, forbiddenChars) {
 		return errors.New("invalid target name")
 	}
 
-	if !predicatePattern.MatchString(tri.Predicate) {
+	if strings.ContainsAny(tri.Predicate, forbiddenChars) {
 		return errors.New("invalid predicate")
 	}
 
@@ -35,7 +35,4 @@ func (tri Triple) String() string {
 	return fmt.Sprintf("%s %s %s %f", tri.Source, tri.Predicate, tri.Target, tri.Weight)
 }
 
-var (
-	namePattern      = regexp.MustCompile("^[A-Za-z0-9-\\.:]*$")
-	predicatePattern = regexp.MustCompile("^[A-Za-z0-9-\\.:]*$")
-)
+var forbiddenChars = "? {}()"

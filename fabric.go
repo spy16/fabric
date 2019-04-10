@@ -35,9 +35,9 @@ func (f *Fabric) Query(ctx context.Context, query Query) ([]Triple, error) {
 	return f.store.Query(ctx, query)
 }
 
-// Count returns the number of triples matching the query. If the store
-// does not implement the Counter interface, standard Query method will
-// be used to fetch all triples and the result set length is returned.
+// Count returns the number of triples matching the query. If the store does
+// not implement the Counter interface, standard Query method will be used to
+// fetch all triples and the result set length is returned.
 func (f *Fabric) Count(ctx context.Context, query Query) (int, error) {
 	counter, ok := f.store.(Counter)
 	if ok {
@@ -52,14 +52,14 @@ func (f *Fabric) Count(ctx context.Context, query Query) (int, error) {
 	return len(arr), nil
 }
 
-// Delete removes all the triples from the store matching the given query
-// and returns the number of items deleted.
+// Delete removes all the triples from the store matching the given query and
+// returns the number of items deleted.
 func (f *Fabric) Delete(ctx context.Context, query Query) (int, error) {
 	return f.store.Delete(ctx, query)
 }
 
-// ReWeight performs weight updates on all triples matching the query, if the store
-// implements ReWeighter interface. Otherwise, returns a ErrNotSupported.
+// ReWeight performs weight updates on all triples matching the query, if the
+// store implements ReWeighter interface. Otherwise, returns ErrNotSupported.
 func (f *Fabric) ReWeight(ctx context.Context, query Query, delta float64, replace bool) (int, error) {
 	rew, ok := f.store.(ReWeighter)
 	if !ok {
