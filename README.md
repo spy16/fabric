@@ -41,6 +41,7 @@ if err != nil {
 store := &fabric.SQLStore{
     DB: db,
 }
+store.Setup(context.Background()) // to create required tables
 
 fab := fabric.New(store)
 ```
@@ -48,7 +49,7 @@ fab := fabric.New(store)
 > Fabric `SQLStore` uses Golang standard `database/sql` package. So any SQL database supported
 > through this interface (includes most major SQL databases) should work.
 
-Additional store supports can be added by implementing the `Store` interface.
+Additional store support can be added by implementing the `Store` interface.
 
 ```go
 type Store interface {
