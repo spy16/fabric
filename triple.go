@@ -16,16 +16,16 @@ type Triple struct {
 
 // Validate ensures the entity names are valid.
 func (tri Triple) Validate() error {
-	if strings.ContainsAny(tri.Source, forbiddenChars) {
+	if strings.ContainsAny(tri.Source, forbiddenChars) || tri.Source == "" {
 		return errors.New("invalid source name")
 	}
 
-	if strings.ContainsAny(tri.Target, forbiddenChars) {
-		return errors.New("invalid target name")
+	if strings.ContainsAny(tri.Predicate, forbiddenChars) || tri.Predicate == "" {
+		return errors.New("invalid predicate")
 	}
 
-	if strings.ContainsAny(tri.Predicate, forbiddenChars) {
-		return errors.New("invalid predicate")
+	if strings.ContainsAny(tri.Target, forbiddenChars) || tri.Target == "" {
+		return errors.New("invalid target name")
 	}
 
 	return nil

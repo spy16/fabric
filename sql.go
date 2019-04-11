@@ -30,6 +30,10 @@ func (ss *SQLStore) Count(ctx context.Context, query Query) (int, error) {
 		sq += fmt.Sprintf("WHERE %s", where)
 	}
 
+	if query.Limit > 0 {
+		sq = fmt.Sprintf("%s LIMIT %d", sq, query.Limit)
+	}
+
 	var count int64
 	row := ss.DB.QueryRowContext(ctx, sq, args...)
 	if err := row.Scan(&count); err != nil {
