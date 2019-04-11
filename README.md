@@ -44,3 +44,16 @@ fab := fabric.New(store)
 
 > Fabric `SQLStore` uses Golang standard `database/sql` package. So any SQL database supported
 > through this interface (includes most major SQL databases) should work.
+
+Additional store supports can be added by implementing the `Store` interface.
+
+```go
+type Store interface {
+	Insert(ctx context.Context, tri Triple) error
+	Query(ctx context.Context, q Query) ([]Triple, error)
+	Delete(ctx context.Context, q Query) (int, error)
+}
+```
+
+Optional `Counter` and `ReWeighter` can be implemented by the store implementations
+to support extended query options.
