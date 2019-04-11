@@ -6,10 +6,11 @@ import (
 
 // Query represents a query to identify one or more triples.
 type Query struct {
-	Source    Clause
-	Predicate Clause
-	Target    Clause
-	Weight    Clause
+	Source    Clause `json:"source,omitempty"`
+	Predicate Clause `json:"predicate,omitempty"`
+	Target    Clause `json:"target,omitempty"`
+	Weight    Clause `json:"weight,omitempty"`
+	Limit     int    `json:"limit,omitempty"`
 }
 
 // IsAny returns true if all clauses are any clauses.

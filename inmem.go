@@ -62,8 +62,11 @@ func (mem *InMemoryStore) Query(ctx context.Context, query Query) ([]Triple, err
 	defer mem.mu.RUnlock()
 
 	triples := []Triple{}
-
 	for _, tri := range mem.data {
+		if query.Limit > 0 && len(triples) >= query.Limit {
+			break
+		}
+
 		if query.IsAny() {
 			triples = append(triples, tri)
 			continue
@@ -77,6 +80,7 @@ func (mem *InMemoryStore) Query(ctx context.Context, query Query) ([]Triple, err
 		if match {
 			triples = append(triples, tri)
 		}
+
 	}
 
 	return triples, nil

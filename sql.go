@@ -56,7 +56,11 @@ func (ss *SQLStore) Query(ctx context.Context, query Query) ([]Triple, error) {
 		return nil, err
 	}
 	if where != "" {
-		sq += fmt.Sprintf("WHERE %s", where)
+		sq += fmt.Sprintf(" WHERE %s", where)
+	}
+
+	if query.Limit > 0 {
+		sq = fmt.Sprintf("%s LIMIT %d", sq, query.Limit)
 	}
 
 	rows, err := ss.DB.QueryContext(ctx, sq, args...)
@@ -195,8 +199,7 @@ create table if not exists triples (
 	source text not null,
 	predicate text not null,
 	target text not null,
-	weight decimal not null default 0,
-	created_at timestamp not null default CURRENT_TIMESTAMP
+	weight decimal not null default 0
 );
 create unique index if not exists triple_idx on triples (source, predicate, target);
 `
