@@ -86,7 +86,7 @@ func (ss *SQLStore) Query(ctx context.Context, query Query) ([]Triple, error) {
 	return triples, nil
 }
 
-// Delete removes all the triples from the datbase that match the query.
+// Delete removes all the triples from the database that match the query.
 func (ss *SQLStore) Delete(ctx context.Context, query Query) (int, error) {
 	sq := `DELETE FROM triples WHERE %s`
 
