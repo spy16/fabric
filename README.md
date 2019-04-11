@@ -2,6 +2,9 @@
 
 # Fabric
 
+
+[![GoDoc](https://godoc.org/github.com/spy16/fabric?status.svg)](https://godoc.org/github.com/spy16/fabric) [![Go Report Card](https://goreportcard.com/badge/github.com/spy16/fabric)](https://goreportcard.com/report/github.com/spy16/fabric)
+
 Fabric is a triple-store written in `Golang`. Fabric provides simple functions
 and store options to deal with "Subject->Predicate->Object" relations or so called
 triples.

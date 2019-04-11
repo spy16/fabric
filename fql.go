@@ -11,10 +11,12 @@ type FQL struct {
 }
 
 // Exec dispatches FQL query string into appropriate Fabric query methods.
-func (fql *FQL) Exec(ctx context.Context, query string) (interface{}, error) {
+func (fql *FQL) Exec(ctx context.Context, query string) ([]Triple, error) {
 	if fql == nil || fql.Fabric == nil {
 		return nil, errors.New("not initialized")
 	}
+
+	// get bob* knows ?
 
 	return nil, errors.New("not implemented")
 }
