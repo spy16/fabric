@@ -13,10 +13,34 @@ import (
 // NewHTTP initializes the an http router with all the query routes and
 // middlewares initialized.
 func NewHTTP(fab *fabric.Fabric) http.Handler {
+	handleQuery := queryHandler(fab)
+	handleInsert := insertHandler(fab)
+	handleReWeight := reweightHandler(fab)
+	handleDelete := deleteHandler(fab)
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("/query", queryHandler(fab))
-	mux.HandleFunc("/query.js", queryHandler(fab))
-	return mux
+	mux.HandleFunc("/triples", func(wr http.ResponseWriter, req *http.Request) {
+		switch req.Method {
+		case http.MethodGet:
+			handleQuery(wr, req)
+
+		case http.MethodPost:
+			handleInsert(wr, req)
+
+		case http.MethodPatch:
+			handleReWeight(wr, req)
+
+		case http.MethodDelete:
+
+			handleDelete(wr, req)
+
+		default:
+			writeResponse(wr, http.StatusMethodNotAllowed, map[string]string{
+				"error": "method not allowed",
+			})
+		}
+	})
+	return withLogs(mux)
 }
 
 func queryHandler(fab *fabric.Fabric) http.HandlerFunc {
@@ -41,9 +65,86 @@ func queryHandler(fab *fabric.Fabric) http.HandlerFunc {
 	}
 }
 
+func insertHandler(fab *fabric.Fabric) http.HandlerFunc {
+	return func(wr http.ResponseWriter, req *http.Request) {
+		var tri fabric.Triple
+		if err := json.NewDecoder(req.Body).Decode(&tri); err != nil {
+			writeResponse(wr, http.StatusBadRequest, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		if err := fab.Insert(req.Context(), tri); err != nil {
+			writeResponse(wr, http.StatusInternalServerError, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+		writeResponse(wr, http.StatusCreated, nil)
+	}
+}
+
+func reweightHandler(fab *fabric.Fabric) http.HandlerFunc {
+	return func(wr http.ResponseWriter, req *http.Request) {
+		var payload struct {
+			fabric.Query `json:",inline"`
+
+			Delta   float64 `json:"delta"`
+			Replace bool    `json:"replace"`
+		}
+		if err := json.NewDecoder(req.Body).Decode(&payload); err != nil {
+			writeResponse(wr, http.StatusBadRequest, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		updates, err := fab.ReWeight(req.Context(), payload.Query, payload.Delta, payload.Replace)
+		if err != nil {
+			writeResponse(wr, http.StatusInternalServerError, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		writeResponse(wr, http.StatusOK, map[string]interface{}{
+			"updated": updates,
+		})
+	}
+}
+
+func deleteHandler(fab *fabric.Fabric) http.HandlerFunc {
+	return func(wr http.ResponseWriter, req *http.Request) {
+		query, err := readQuery(req.URL.Query())
+		if err != nil {
+			writeResponse(wr, http.StatusBadRequest, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		deleted, err := fab.Delete(req.Context(), *query)
+		if err != nil {
+			writeResponse(wr, http.StatusBadRequest, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		writeResponse(wr, http.StatusOK, map[string]interface{}{
+			"deleted": deleted,
+		})
+	}
+}
+
 func writeResponse(wr http.ResponseWriter, status int, body interface{}) {
 	wr.Header().Set("Content-Type", "application/json; charset=utf-8")
-	wr.WriteHeader(http.StatusOK)
+	wr.WriteHeader(status)
+	if body == nil || status == http.StatusNoContent {
+		return
+	}
+
 	json.NewEncoder(wr).Encode(body)
 }
 

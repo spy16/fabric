@@ -61,6 +61,11 @@ func (f *Fabric) Delete(ctx context.Context, query Query) (int, error) {
 // ReWeight performs weight updates on all triples matching the query, if the
 // store implements ReWeighter interface. Otherwise, returns ErrNotSupported.
 func (f *Fabric) ReWeight(ctx context.Context, query Query, delta float64, replace bool) (int, error) {
+	if delta == 0 && !replace {
+		// adding delta has no effect since it is zero
+		return 0, errors.New("update has no effect since delta is zero and replace is false")
+	}
+
 	rew, ok := f.store.(ReWeighter)
 	if !ok {
 		return 0, ErrNotSupported
