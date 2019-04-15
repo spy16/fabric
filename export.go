@@ -14,7 +14,7 @@ func ExportDOT(name string, triples []Triple) string {
 
 	out := fmt.Sprintf("digraph %s {\n", name)
 	for _, tri := range triples {
-		out += fmt.Sprintf("\"%s\" ->\"%s\" [label=\"%s\"];\n", tri.Source, tri.Target, tri.Predicate)
+		out += fmt.Sprintf("  \"%s\" -> \"%s\" [label=\"%s\" weight=%f];\n", tri.Source, tri.Target, tri.Predicate, tri.Weight)
 	}
 	out += "}"
 	return out

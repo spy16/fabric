@@ -35,7 +35,7 @@ func NewHTTP(fab *fabric.Fabric) http.Handler {
 			handleDelete(wr, req)
 
 		default:
-			writeResponse(wr, http.StatusMethodNotAllowed, map[string]string{
+			writeResponse(wr, req, http.StatusMethodNotAllowed, map[string]string{
 				"error": "method not allowed",
 			})
 		}
@@ -47,7 +47,7 @@ func queryHandler(fab *fabric.Fabric) http.HandlerFunc {
 	return func(wr http.ResponseWriter, req *http.Request) {
 		query, err := readQuery(req.URL.Query())
 		if err != nil {
-			writeResponse(wr, http.StatusBadRequest, map[string]string{
+			writeResponse(wr, req, http.StatusBadRequest, map[string]string{
 				"error": err.Error(),
 			})
 			return
@@ -55,13 +55,13 @@ func queryHandler(fab *fabric.Fabric) http.HandlerFunc {
 
 		tri, err := fab.Query(req.Context(), *query)
 		if err != nil {
-			writeResponse(wr, http.StatusBadRequest, map[string]string{
+			writeResponse(wr, req, http.StatusBadRequest, map[string]string{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		writeResponse(wr, http.StatusOK, tri)
+		writeResponse(wr, req, http.StatusOK, tri)
 	}
 }
 
@@ -69,19 +69,19 @@ func insertHandler(fab *fabric.Fabric) http.HandlerFunc {
 	return func(wr http.ResponseWriter, req *http.Request) {
 		var tri fabric.Triple
 		if err := json.NewDecoder(req.Body).Decode(&tri); err != nil {
-			writeResponse(wr, http.StatusBadRequest, map[string]string{
+			writeResponse(wr, req, http.StatusBadRequest, map[string]string{
 				"error": err.Error(),
 			})
 			return
 		}
 
 		if err := fab.Insert(req.Context(), tri); err != nil {
-			writeResponse(wr, http.StatusInternalServerError, map[string]string{
+			writeResponse(wr, req, http.StatusInternalServerError, map[string]string{
 				"error": err.Error(),
 			})
 			return
 		}
-		writeResponse(wr, http.StatusCreated, nil)
+		writeResponse(wr, req, http.StatusCreated, nil)
 	}
 }
 
@@ -94,7 +94,7 @@ func reweightHandler(fab *fabric.Fabric) http.HandlerFunc {
 			Replace bool    `json:"replace"`
 		}
 		if err := json.NewDecoder(req.Body).Decode(&payload); err != nil {
-			writeResponse(wr, http.StatusBadRequest, map[string]string{
+			writeResponse(wr, req, http.StatusBadRequest, map[string]string{
 				"error": err.Error(),
 			})
 			return
@@ -102,13 +102,13 @@ func reweightHandler(fab *fabric.Fabric) http.HandlerFunc {
 
 		updates, err := fab.ReWeight(req.Context(), payload.Query, payload.Delta, payload.Replace)
 		if err != nil {
-			writeResponse(wr, http.StatusInternalServerError, map[string]string{
+			writeResponse(wr, req, http.StatusInternalServerError, map[string]string{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		writeResponse(wr, http.StatusOK, map[string]interface{}{
+		writeResponse(wr, req, http.StatusOK, map[string]interface{}{
 			"updated": updates,
 		})
 	}
@@ -118,7 +118,7 @@ func deleteHandler(fab *fabric.Fabric) http.HandlerFunc {
 	return func(wr http.ResponseWriter, req *http.Request) {
 		query, err := readQuery(req.URL.Query())
 		if err != nil {
-			writeResponse(wr, http.StatusBadRequest, map[string]string{
+			writeResponse(wr, req, http.StatusBadRequest, map[string]string{
 				"error": err.Error(),
 			})
 			return
@@ -126,26 +126,29 @@ func deleteHandler(fab *fabric.Fabric) http.HandlerFunc {
 
 		deleted, err := fab.Delete(req.Context(), *query)
 		if err != nil {
-			writeResponse(wr, http.StatusBadRequest, map[string]string{
+			writeResponse(wr, req, http.StatusBadRequest, map[string]string{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		writeResponse(wr, http.StatusOK, map[string]interface{}{
+		writeResponse(wr, req, http.StatusOK, map[string]interface{}{
 			"deleted": deleted,
 		})
 	}
 }
 
-func writeResponse(wr http.ResponseWriter, status int, body interface{}) {
+func writeResponse(wr http.ResponseWriter, req *http.Request, status int, body interface{}) {
 	wr.Header().Set("Content-Type", "application/json; charset=utf-8")
 	wr.WriteHeader(status)
 	if body == nil || status == http.StatusNoContent {
 		return
 	}
 
-	json.NewEncoder(wr).Encode(body)
+	switch outputFormat(req) {
+	default:
+		json.NewEncoder(wr).Encode(body)
+	}
 }
 
 func readQuery(vals url.Values) (*fabric.Query, error) {
@@ -178,4 +181,13 @@ func readInto(vals url.Values, name string, cl *fabric.Clause) error {
 	cl.Type = parts[0]
 	cl.Value = parts[1]
 	return nil
+}
+
+func outputFormat(req *http.Request) string {
+	f := strings.TrimSpace(req.URL.Query().Get("format"))
+	if f != "" {
+		return f
+	}
+
+	return "json"
 }
