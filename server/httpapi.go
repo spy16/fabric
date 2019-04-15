@@ -61,7 +61,7 @@ func queryHandler(fab *fabric.Fabric) http.HandlerFunc {
 			return
 		}
 
-		writeResponse(wr, req, http.StatusOK, tri)
+		writeTriples(wr, req, http.StatusOK, tri)
 	}
 }
 
@@ -135,6 +135,15 @@ func deleteHandler(fab *fabric.Fabric) http.HandlerFunc {
 		writeResponse(wr, req, http.StatusOK, map[string]interface{}{
 			"deleted": deleted,
 		})
+	}
+}
+
+func writeTriples(wr http.ResponseWriter, req *http.Request, status int, triples []fabric.Triple) {
+	switch outputFormat(req) {
+	case "dot":
+		wr.Write([]byte(fabric.ExportDOT("fabric", triples)))
+	default:
+		writeResponse(wr, req, status, triples)
 	}
 }
 

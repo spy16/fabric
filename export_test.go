@@ -10,7 +10,7 @@ func TestExportDOT(suite *testing.T) {
 	suite.Parallel()
 
 	suite.Run("WithNoName", func(t *testing.T) {
-		expected := "digraph fabric {\n}"
+		expected := "digraph fabric {\n}\n"
 		out := fabric.ExportDOT("", []fabric.Triple{})
 
 		if out != expected {
@@ -19,7 +19,7 @@ func TestExportDOT(suite *testing.T) {
 	})
 
 	suite.Run("Normal", func(t *testing.T) {
-		expected := "digraph hello {\n  \"s\" -> \"t\" [label=\"p\" weight=0.000000];\n}"
+		expected := "digraph hello {\n  \"s\" -> \"t\" [label=\"p\" weight=0.000000];\n}\n"
 		out := fabric.ExportDOT("hello", []fabric.Triple{
 			{
 				Source:    "s",
