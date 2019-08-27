@@ -5,7 +5,7 @@
 
 [![GoDoc](https://godoc.org/github.com/spy16/fabric?status.svg)](https://godoc.org/github.com/spy16/fabric) [![Go Report Card](https://goreportcard.com/badge/github.com/spy16/fabric)](https://goreportcard.com/report/github.com/spy16/fabric)
 
-Fabric is a triple-store written in `Golang`. Fabric provides simple functions
+Fabric is a triple-store written in `Go`. Fabric provides simple functions
 and store options to deal with "Subject->Predicate->Object" relations or so called
 triples.
 
@@ -48,7 +48,7 @@ store.Setup(context.Background()) // to create required tables
 fab := fabric.New(store)
 ```
 
-> Fabric `SQLStore` uses Golang standard `database/sql` package. So any SQL database supported
+> Fabric `SQLStore` uses Go's standard `database/sql` package. So any SQL database supported
 > through this interface (includes most major SQL databases) should work.
 
 Additional store support can be added by implementing the `Store` interface.
