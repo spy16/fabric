@@ -11,7 +11,7 @@ triples.
 
 ## Usage
 
-Get fabric by using `go get -u github.com/spy16/fabric` (Fabric has no external dependencies)
+Get fabric by using `go get -u github.com/spy16/fabric` (Fabric as a library has no external dependencies)
 
 ```go
 mem := &fabric.InMemoryStore{}
