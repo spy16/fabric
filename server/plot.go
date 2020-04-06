@@ -19,7 +19,7 @@ var plotTemplate = template.Must(template.New("plot").Parse(`
   <script>
     d3.select("#graph")
       .graphviz()
-      .renderDot('{{ .graphVizData }}');
+      .renderDot({{ .graphVizStr }});
   </script>
 
 </body>

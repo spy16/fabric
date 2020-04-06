@@ -1,5 +1,9 @@
 all: clean build tidy test lint
 
+install:
+	@echo "Installing Fabric to GOBIN..."
+	@go install ./cmd/fabric
+
 clean:
 	@echo "Cleaning up..."
 	@rm -rf ./bin/

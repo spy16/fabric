@@ -31,7 +31,6 @@ func NewHTTP(fab *fabric.Fabric) http.Handler {
 			handleReWeight(wr, req)
 
 		case http.MethodDelete:
-
 			handleDelete(wr, req)
 
 		default:
@@ -69,6 +68,13 @@ func insertHandler(fab *fabric.Fabric) http.HandlerFunc {
 	return func(wr http.ResponseWriter, req *http.Request) {
 		var tri fabric.Triple
 		if err := json.NewDecoder(req.Body).Decode(&tri); err != nil {
+			writeResponse(wr, req, http.StatusBadRequest, map[string]string{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		if err := tri.Validate(); err != nil {
 			writeResponse(wr, req, http.StatusBadRequest, map[string]string{
 				"error": err.Error(),
 			})
@@ -142,6 +148,12 @@ func writeTriples(wr http.ResponseWriter, req *http.Request, status int, triples
 	switch outputFormat(req) {
 	case "dot":
 		wr.Write([]byte(fabric.ExportDOT("fabric", triples)))
+
+	case "plot":
+		plotTemplate.Execute(wr, map[string]interface{}{
+			"graphVizStr": "`" + fabric.ExportDOT("fabric", triples) + "`",
+		})
+
 	default:
 		writeResponse(wr, req, status, triples)
 	}

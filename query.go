@@ -19,8 +19,7 @@ func (q Query) IsAny() bool {
 		q.Target.IsAny() && q.Weight.IsAny())
 }
 
-// Map returns a map version of the query with all the any
-// clauses removed.
+// Map returns a map version of the query with all the any clauses removed.
 func (q Query) Map() map[string]Clause {
 	m := map[string]Clause{}
 	if !q.Source.IsAny() {
@@ -42,8 +41,15 @@ func (q Query) Map() map[string]Clause {
 	return m
 }
 
-// Clause represents a query clause. Zero value of this struct will
-// be used as 'Any' clause which matches any value.
+func (q *Query) normalize() {
+	q.Source.normalize()
+	q.Target.normalize()
+	q.Predicate.normalize()
+	q.Weight.normalize()
+}
+
+// Clause represents a query clause. Zero value of this struct will be used as
+// 'Any' clause which matches any value.
 type Clause struct {
 	// Type represents the operation that should be used. Examples include equal,
 	// gt, lt etc. Supported operations are dictated by store implementations.
@@ -60,4 +66,26 @@ func (cl Clause) IsAny() bool {
 
 func (cl Clause) String() string {
 	return fmt.Sprintf("%s %s", cl.Type, cl.Value)
+}
+
+func (cl *Clause) normalize() {
+	normalized, found := knownTypes[cl.Type]
+	if found {
+		cl.Type = normalized
+	}
+}
+
+var knownTypes = map[string]string{
+	"equal":        "eq",
+	"equals":       "eq",
+	"==":           "eq",
+	"=":            "eq",
+	">":            "gt",
+	"greater-than": "gt",
+	"<":            "lt",
+	"lesser-than":  "lt",
+	"<=":           "lte",
+	">=":           "gte",
+	"~":            "like",
+	"~=":           "like",
 }

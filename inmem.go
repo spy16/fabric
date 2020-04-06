@@ -46,10 +46,11 @@ func (mem *InMemoryStore) Insert(ctx context.Context, tri Triple) error {
 		mem.data = map[string]Triple{}
 	}
 
-	if _, ok := mem.data[tri.String()]; ok {
+	if _, ok := mem.data[mem.idFor(tri)]; ok {
 		return errors.New("triple already exists")
 	}
-	mem.data[tri.String()] = tri
+
+	mem.data[mem.idFor(tri)] = tri
 
 	return nil
 }
@@ -101,7 +102,7 @@ func (mem *InMemoryStore) Delete(ctx context.Context, query Query) (int, error) 
 	defer mem.mu.Unlock()
 
 	for _, tri := range triples {
-		delete(mem.data, tri.String())
+		delete(mem.data, mem.idFor(tri))
 	}
 
 	return len(triples), nil
@@ -124,7 +125,7 @@ func (mem *InMemoryStore) ReWeight(ctx context.Context, query Query, delta float
 			tri.Weight += delta
 		}
 
-		mem.data[tri.String()] = tri
+		mem.data[mem.idFor(tri)] = tri
 	}
 
 	return len(triples), nil
@@ -134,6 +135,10 @@ func (mem *InMemoryStore) ensureInit() {
 	if mem.mu == nil {
 		mem.mu = new(sync.RWMutex)
 	}
+}
+
+func (mem *InMemoryStore) idFor(tri Triple) string {
+	return fmt.Sprintf("%s %s %s", tri.Source, tri.Predicate, tri.Target)
 }
 
 func isMatch(tri Triple, query Query) (bool, error) {

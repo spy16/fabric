@@ -21,6 +21,7 @@ func main() {
 	flag.Parse()
 
 	fab := fabric.New(setupStore(*db))
+
 	mux := server.NewHTTP(fab)
 	log.Printf("starting HTTP API server on '%s'...", *httpAddr)
 	log.Fatalf("server exiting: %v", http.ListenAndServe(*httpAddr, mux))

@@ -32,6 +32,7 @@ func (f *Fabric) Insert(ctx context.Context, tri Triple) error {
 
 // Query finds all the triples matching the given query.
 func (f *Fabric) Query(ctx context.Context, query Query) ([]Triple, error) {
+	query.normalize()
 	return f.store.Query(ctx, query)
 }
 

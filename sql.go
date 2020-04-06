@@ -176,22 +176,22 @@ func getWhereClause(query Query) (string, []interface{}, error) {
 
 func toSQL(clause Clause) (string, string, error) {
 	switch clause.Type {
-	case "=", "==", "equal":
+	case "eq":
 		return "=", clause.Value, nil
 
-	case "~", "~=", "like":
+	case "like":
 		return " LIKE ", strings.Replace(clause.Value, "*", "%", -1), nil
 
-	case ">", "gt":
+	case "gt":
 		return ">", clause.Value, nil
 
-	case "<", "lt":
+	case "lt":
 		return "<", clause.Value, nil
 
-	case "<=", "lte":
+	case "lte":
 		return "<=", clause.Value, nil
 
-	case ">=", "gte":
+	case "gte":
 		return ">=", clause.Value, nil
 	}
 
