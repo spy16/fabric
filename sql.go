@@ -8,9 +8,11 @@ import (
 	"strings"
 )
 
-var _ Store = &SQLStore{}
-var _ ReWeighter = &SQLStore{}
-var _ Counter = &SQLStore{}
+var (
+	_ Store      = &SQLStore{}
+	_ ReWeighter = &SQLStore{}
+	_ Counter    = &SQLStore{}
+)
 
 // SQLStore implements Store interface using the Go standard library
 // sql package.
@@ -73,7 +75,7 @@ func (ss *SQLStore) Query(ctx context.Context, query Query) ([]Triple, error) {
 	}
 	defer rows.Close()
 
-	triples := []Triple{}
+	var triples []Triple
 	for rows.Next() {
 		var tri Triple
 		if err := rows.Scan(&tri.Source, &tri.Predicate, &tri.Target, &tri.Weight); err != nil {
@@ -160,8 +162,8 @@ func (ss *SQLStore) Setup(ctx context.Context) error {
 }
 
 func getWhereClause(query Query) (string, []interface{}, error) {
-	where := []string{}
-	args := []interface{}{}
+	var where []string
+	var args []interface{}
 	for col, clause := range query.Map() {
 		sqlOp, value, err := toSQL(clause)
 		if err != nil {
