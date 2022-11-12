@@ -5,6 +5,9 @@ import (
 	"errors"
 )
 
+// ErrNotSupported is returned when an operation is not supported.
+var ErrNotSupported = errors.New("not supported")
+
 // New returns a new instance of fabric with given store implementation.
 func New(store Store) *Fabric {
 	if f, ok := store.(*Fabric); ok {
@@ -74,6 +77,3 @@ func (f *Fabric) ReWeight(ctx context.Context, query Query, delta float64, repla
 
 	return rew.ReWeight(ctx, query, delta, replace)
 }
-
-// ErrNotSupported is returned when an operation is not supported.
-var ErrNotSupported = errors.New("not supported")
